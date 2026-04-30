@@ -7,10 +7,10 @@ from download_ffmpeg import download_ffmpeg
 def create_icons(png_path):
     """Convert PNG to ICO and ICNS for the app."""
     if not os.path.exists(png_path):
-        print(f"⚠️  Icon {png_path} not found. Skipping icon creation.")
+        print("Icon not found. Skipping icon creation.")
         return None, None
 
-    print("🎨 Creating app icons...")
+    print("Creating app icons...")
     
     ico_path = "icon.ico"
     icns_path = "icon.icns"
@@ -36,11 +36,11 @@ def create_icons(png_path):
         
         return ico_path, icns_path
     except Exception as e:
-        print(f"⚠️  Could not create icons: {e}")
+        print(f"Could not create icons: {e}")
         return None, None
 
 def build():
-    print("🚀 Starting Icarus A Build Process...")
+    print("Starting Icarus A Build Process...")
     
     # 1. Ensure FFmpeg is ready
     download_ffmpeg()
@@ -66,12 +66,12 @@ def build():
     if icon_file and os.path.exists(icon_file):
         cmd.insert(1, f'--icon={icon_file}')
 
-    print(f"📦 Running command: {' '.join(cmd)}")
+    print(f"Running command: {' '.join(cmd)}")
     subprocess.run(cmd)
 
-    print("\n✅ Build Successful!")
-    print("📂 Your software is ready in the 'dist' folder.")
-    print("👉 Look for 'Icarus A.app' (Mac) or 'Icarus A' folder (Windows)")
+    print("\nBuild Successful!")
+    print("Your software is ready in the 'dist' folder.")
+    print("Look for 'Icarus A.app' (Mac) or 'Icarus A' folder (Windows)")
 
 if __name__ == "__main__":
     build()

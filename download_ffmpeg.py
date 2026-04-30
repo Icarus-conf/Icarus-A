@@ -5,7 +5,7 @@ import zipfile
 import shutil
 
 def download_ffmpeg():
-    print("📥 Downloading portable FFmpeg...")
+    print("Downloading portable FFmpeg...")
     
     bin_dir = os.path.join(os.getcwd(), "bin")
     os.makedirs(bin_dir, exist_ok=True)
@@ -21,7 +21,7 @@ def download_ffmpeg():
     local_zip = os.path.join(bin_dir, "ffmpeg.zip")
     
     if os.path.exists(os.path.join(bin_dir, "ffmpeg")):
-        print("✅ FFmpeg already exists in bin folder.")
+        print("FFmpeg already exists in bin folder.")
         return
 
     try:
@@ -30,7 +30,7 @@ def download_ffmpeg():
         response = requests.get(url, headers=headers, stream=True, allow_redirects=True)
         
         if response.status_code != 200:
-            print(f"❌ Download failed. Status code: {response.status_code}")
+            print(f"Download failed. Status code: {response.status_code}")
             return
 
         with open(local_zip, 'wb') as f:
@@ -38,14 +38,9 @@ def download_ffmpeg():
                 if chunk:
                     f.write(chunk)
         
-        print("📦 Extracting...")
+        print("Extracting...")
         if not zipfile.is_zipfile(local_zip):
-            print("❌ The downloaded file is corrupted or not a zip. Trying fallback...")
-            # Fallback for Mac
-            if sys.platform == "darwin":
-                # URL for native Apple Silicon (ARM64) FFmpeg
-                url = "https://evermeet.cx/ffmpeg/get/zip" 
-                # Try download again... (simplified for now)
+            print("The downloaded file is corrupted or not a zip.")
             return
 
         with zipfile.ZipFile(local_zip, 'r') as zip_ref:
@@ -64,13 +59,13 @@ def download_ffmpeg():
                     if src != dst:
                         shutil.move(src, dst)
                     os.chmod(dst, 0o755)
-                    print(f"✨ FFmpeg moved to {dst}")
+                    print(f"FFmpeg moved to {dst}")
                     break
         
-        print("✅ FFmpeg setup complete!")
+        print("FFmpeg setup complete!")
         
     except Exception as e:
-        print(f"❌ Failed to download FFmpeg: {e}")
+        print(f"Failed to download FFmpeg: {e}")
 
 if __name__ == "__main__":
     download_ffmpeg()
