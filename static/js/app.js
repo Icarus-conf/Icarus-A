@@ -1,6 +1,6 @@
 // ==================== Configuration ====================
-const socket = io();
 let isDownloading = false;
+let pollingInterval = null;
 let audioOnly = false;
 
 // ==================== DOM Elements ====================
@@ -21,18 +21,35 @@ const videoAuthor = document.getElementById('videoAuthor');
 const videoDuration = document.getElementById('videoDuration');
 const downloadsList = document.getElementById('downloadsList');
 
-// ==================== Socket.IO Events ====================
-socket.on('connect', () => {
-    console.log('Connected to server');
-});
+// ==================== Polling Mechanism ====================
+function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval);
+    
+    pollingInterval = setInterval(async () => {
+        try {
+            const response = await fetch('/progress');
+            const data = await response.json();
+            
+            if (data && data.message) {
+                updateProgress(data);
+                
+                // Stop polling if complete or error
+                if (data.progress === 100 || (data.progress === 0 && data.message.includes('Error'))) {
+                    stopPolling();
+                }
+            }
+        } catch (err) {
+            console.error('Polling error:', err);
+        }
+    }, 1000); // Poll every second
+}
 
-socket.on('download_progress', (data) => {
-    updateProgress(data);
-});
-
-socket.on('disconnect', () => {
-    console.log('Disconnected from server');
-});
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
 
 const pasteBtn = document.getElementById('pasteBtn');
 
@@ -146,6 +163,7 @@ async function handleDownload(e) {
         }
 
         showToast('Download started', 'info');
+        startPolling(); // Start fetching progress updates
 
     } catch (error) {
         console.error('Download error:', error);

@@ -4,6 +4,7 @@ Flask backend with WebSocket support for real-time progress updates
 """
 
 import os
+import sys
 import re
 import tempfile
 import subprocess
@@ -11,16 +12,37 @@ import threading
 import requests
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+
 from pytubefix import YouTube, Playlist
 from datetime import datetime
 
-app = Flask(__name__)
+# --- PyInstaller Path Handling ---
+def get_resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+# Also check for local bin folder (for standalone bundling)
+local_bin = get_resource_path("bin")
+if os.path.exists(local_bin):
+    os.environ["PATH"] = local_bin + os.pathsep + os.environ["PATH"]
+
+app = Flask(__name__, 
+            template_folder=get_resource_path("templates"),
+            static_folder=get_resource_path("static"))
+
 app.config['SECRET_KEY'] = 'youtube-downloader-secret-key'
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
+# Store progress in a global dictionary
+progress_data = {}
+
+# --- Use User's Downloads Folder ---
+DOWNLOADS_DIR = os.path.join(os.path.expanduser("~"), "Downloads", "YouTube-Downloads")
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
 # ---------------------- Helpers ----------------------
@@ -54,7 +76,7 @@ def clean_youtube_url(url: str) -> str:
 def merge_audio_video(video_path, audio_path, output_path):
     """Merge video + audio using ffmpeg."""
     try:
-        subprocess.run(
+        result = subprocess.run(
             [
                 "ffmpeg", "-y",
                 "-i", video_path,
@@ -64,25 +86,35 @@ def merge_audio_video(video_path, audio_path, output_path):
                 "-filter:a", "loudnorm",
                 output_path
             ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=True
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
-        os.remove(video_path)
-        os.remove(audio_path)
-        return True
-    except Exception:
-        return False
+        if result.returncode == 0:
+            os.remove(video_path)
+            os.remove(audio_path)
+            return True, None
+        else:
+            return False, f"FFmpeg error: {result.stderr[:200]}"
+    except FileNotFoundError:
+        return False, "FFmpeg is not installed. Please install it with 'brew install ffmpeg'"
+    except Exception as e:
+        return False, str(e)
 
 
 def emit_progress(message, progress=None, video_info=None):
-    """Emit progress update via WebSocket"""
-    data = {'message': message}
+    """Store progress update for polling"""
+    global progress_data
+    progress_data['message'] = message
     if progress is not None:
-        data['progress'] = progress
+        progress_data['progress'] = progress
     if video_info:
-        data['video_info'] = video_info
-    socketio.emit('download_progress', data)
+        progress_data['video_info'] = video_info
+
+@app.route('/progress')
+def get_progress():
+    """Endpoint for frontend to poll progress"""
+    return jsonify(progress_data)
 
 
 # ---------------------- Core Download Functions ----------------------
@@ -219,13 +251,15 @@ def download_video_web(url, target_quality="720", audio_only=False):
         ))
 
         emit_progress("Merging audio and video...", 85)
-        if merge_audio_video(video_path, audio_path, output_file):
+        success, error_msg = merge_audio_video(video_path, audio_path, output_file)
+        
+        if success:
             save_thumbnail(yt.thumbnail_url, os.path.basename(output_file))
             emit_progress("Download complete!", 100)
             return {"success": True, "filename": os.path.basename(output_file), "type": "video"}
         else:
-            emit_progress("Merge failed, but files saved", 100)
-            return {"success": False, "error": "Merge failed"}
+            emit_progress(f"Merge failed: {error_msg}", 0)
+            return {"success": False, "error": error_msg}
 
     except Exception as e:
         emit_progress(f"Error: {str(e)}", 0)
@@ -366,25 +400,10 @@ def api_thumbnail(filename):
 
 
 
-# ---------------------- WebSocket Events ----------------------
-
-@socketio.on('connect')
-def handle_connect():
-    """Handle client connection"""
-    print("Client connected")
-    emit('connected', {'message': 'Connected to server'})
-
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    """Handle client disconnection"""
-    print("Client disconnected")
-
-
 # ---------------------- Main ----------------------
 
 if __name__ == '__main__':
-    print(f"YouTube Downloader Web App")
+    print(f"Icarus A Web App")
     print(f"Server starting on http://localhost:5001")
     print(f"Downloads directory: {DOWNLOADS_DIR}")
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
