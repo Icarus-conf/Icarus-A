@@ -1,66 +1,58 @@
-# 📺 YouTube Downloader Web App
+# 🦅 Icarus A
+**Premium Desktop YouTube Downloader for macOS & Windows**
 
-A premium, modern web application for downloading YouTube videos and audio with real-time progress tracking. Built with Flask, Socket.IO, and a beautiful glassmorphism UI.
+Icarus A is a modern, standalone desktop application designed for high-speed, high-quality video and audio downloads. Built with a focus on simplicity and premium aesthetics, it handles complex tasks like 1080p video merging and MP3 conversion automatically.
 
-![Premium Interface](/Users/icarus/.gemini/antigravity/brain/62578632-dd18-4e07-af52-272da7e3af93/thumbnail_verification_final_1764371684042.png)
+![Icarus A Interface](static/images/logo.png) <!-- You can add a screenshot here later -->
 
 ## ✨ Features
 
-### 🎥 Core Functionality
-- **High Quality Video**: Download videos in 1080p, 720p, 480p, or 360p.
-- **Audio Extraction**: Convert videos to high-quality MP3 audio automatically.
-- **Playlist Support**: Download entire playlists with a single click.
-- **Real-time Progress**: Live progress bar and status updates via WebSockets.
+### 🎥 Native Power
+- **Standalone App**: No Docker or terminal setup needed. Just open the `.app` or `.exe`.
+- **Apple Silicon Native**: Optimized for M1/M2/M3 chips (No Rosetta warning).
+- **Auto-FFmpeg**: Automatically downloads and bundles its own processing engine.
+- **Chrome App Mode**: Runs in a dedicated, sleek window without browser clutter.
 
-### 💎 Premium Experience
-- **Smart Paste**: One-click button to paste URLs from your clipboard.
-- **Visual History**: View your recent downloads with video thumbnails.
-- **File Management**: Delete unwanted files directly from the interface.
-- **Toast Notifications**: Smooth, non-intrusive alerts for actions.
-- **Dark Mode UI**: Sleek, responsive design with glassmorphism effects.
+### 💎 Premium Downloads
+- **Ultra HD Support**: Downloads and merges 1080p and 4K videos with audio.
+- **Instant MP3**: High-quality audio extraction with a single click.
+- **Smart Progress**: Real-time progress tracking and status updates.
+- **Visual History**: Manage your recent downloads with built-in thumbnails.
+- **Global Downloads**: Saves files directly to your system `Downloads/Icarus-Downloads` folder.
 
-## 🚀 Quick Start
+## 🚀 Installation & Usage
 
-### Option 1: Docker (Recommended)
-The easiest way to run the app. Requires Docker Desktop.
+### For Users
+1. **Download**: Get the latest version from the **GitHub Actions** tab (Artifacts).
+2. **Launch**:
+   - **Mac**: Right-click `Icarus A.app` and select **Open**.
+   - **Windows**: Open the `Icarus A` folder and run `Icarus A.exe`.
+3. **Enjoy**: Paste a link and start downloading!
 
-```bash
-# Start the app
-docker compose up -d
+### For Developers
+If you want to build the software locally:
 
-# Stop the app
-docker compose down
-```
-Access the app at **http://localhost:5001**
-
-### Option 2: Local Python Setup
-If you prefer running without Docker. Requires Python 3.8+ and ffmpeg.
-
-1. **Install ffmpeg**
-   ```bash
-   brew install ffmpeg  # macOS
-   sudo apt install ffmpeg  # Ubuntu
-   ```
-
-2. **Install Dependencies**
+1. **Setup Environment**:
    ```bash
    python -m venv venv
-   source venv/bin/activate
+   source venv/bin/activate  # Mac
+   # or venv\Scripts\activate on Windows
    pip install -r requirements.txt
+   pip install Pillow
    ```
 
-3. **Run the Server**
+2. **Build the Desktop App**:
    ```bash
-   python app.py
+   python build_app.py
    ```
+   The final app will be waiting in the `dist/` folder.
 
 ## 🛠 Tech Stack
-
-- **Backend**: Flask, Flask-SocketIO, Pytubefix
-- **Frontend**: HTML5, CSS3 (Variables, Flexbox/Grid), JavaScript (ES6+)
-- **Real-time**: Socket.IO (WebSockets)
-- **Processing**: FFmpeg (Audio conversion/merging)
-- **Deployment**: Docker & Docker Compose
+- **Engine**: Python 3.9 + Flask (Internal Backend)
+- **UI**: Glassmorphism CSS + Vanilla JavaScript
+- **Processing**: FFmpeg (Bundled)
+- **Packaging**: PyInstaller
+- **CI/CD**: GitHub Actions (Multi-platform Builds)
 
 ## 📝 License
-MIT License - Free to use and modify.
+MIT License - Created for a premium downloading experience.
