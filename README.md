@@ -3,7 +3,7 @@
 
 Icarus A is a modern, standalone desktop application designed for high-speed, high-quality video and audio downloads. Built with a focus on simplicity and premium aesthetics, it handles complex tasks like 1080p video merging and MP3 conversion automatically.
 
-![Icarus A Interface](static/images/logo.png) <!-- You can add a screenshot here later -->
+![Icarus A Interface](https://i.ibb.co/xS9nZybt/Screenshot-2026-04-30-at-9-10-42-AM.png)
 
 ## ✨ Features
 
